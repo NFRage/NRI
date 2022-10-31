@@ -66,9 +66,11 @@ namespace nri
         uint64_t updateScratchDataSizeInBytes;
     };
 
+#if NRI_USE_D3D12
     NRI_API Result NRI_CALL CreateDeviceFromD3D12Device(const DeviceCreationD3D12Desc& deviceDesc, Device*& device);
     NRI_API Format NRI_CALL ConvertDXGIFormatToNRI(uint32_t dxgiFormat);
     NRI_API uint32_t NRI_CALL ConvertNRIFormatToDXGI(Format format);
+#endif
 
     struct WrapperD3D12Interface
     {

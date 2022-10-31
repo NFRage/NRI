@@ -11,7 +11,9 @@ license agreement from NVIDIA CORPORATION is strictly prohibited.
 #include "SharedExternal.h"
 #include "DeviceBase.h"
 
+#if NRI_USE_VULKAN
 #include <vulkan/vulkan.h>
+#endif
 
 #define NRI_STRINGIFY(name) #name
 
@@ -105,6 +107,7 @@ NRI_API Result NRI_CALL nri::GetInterface(const Device& device, const char* inte
     return result;
 }
 
+#if NRI_USE_VULKAN
 static bool IsValidDeviceGroup(const VkPhysicalDeviceGroupProperties& group, PFN_vkGetPhysicalDeviceProperties vkGetPhysicalDeviceProperties)
 {
     VkPhysicalDeviceProperties baseProperties = {};
@@ -121,6 +124,7 @@ static bool IsValidDeviceGroup(const VkPhysicalDeviceGroupProperties& group, PFN
 
     return true;
 }
+#endif
 
 constexpr std::array<nri::PhysicalDeviceType, 5> PHYSICAL_DEVICE_TYPE = {
     nri::PhysicalDeviceType::UNKNOWN,
@@ -130,6 +134,7 @@ constexpr std::array<nri::PhysicalDeviceType, 5> PHYSICAL_DEVICE_TYPE = {
     nri::PhysicalDeviceType::UNKNOWN
 };
 
+#if NRI_USE_VULKAN
 constexpr PhysicalDeviceType GetPhysicalDeviceType(VkPhysicalDeviceType physicalDeviceType)
 {
     const size_t index = std::min(PHYSICAL_DEVICE_TYPE.size() - 1, (size_t)physicalDeviceType);
@@ -249,6 +254,7 @@ NRI_API Result NRI_CALL nri::GetPhysicalDevices(PhysicalDeviceGroup* physicalDev
     UnloadSharedLibrary(*loader);
     return Result::SUCCESS;
 }
+#endif
 
 template< typename T >
 Result FinalizeDeviceCreation(const T& deviceCreationDesc, DeviceBase& deviceImpl, Device*& device)
@@ -302,6 +308,7 @@ NRI_API Result NRI_CALL nri::CreateDevice(const DeviceCreationDesc& deviceCreati
     return FinalizeDeviceCreation(modifiedDeviceCreationDesc, *deviceImpl, device);
 }
 
+#if (NRI_USE_D3D11 == 1)
 NRI_API Result NRI_CALL nri::CreateDeviceFromD3D11Device(const DeviceCreationD3D11Desc& deviceCreationD3D11Desc, Device*& device)
 {
     DeviceCreationDesc deviceCreationDesc = {};
@@ -331,7 +338,9 @@ NRI_API Result NRI_CALL nri::CreateDeviceFromD3D11Device(const DeviceCreationD3D
 
     return FinalizeDeviceCreation(deviceCreationDesc, *deviceImpl, device);
 }
+#endif
 
+#if (NRI_USE_D3D12 == 1)
 NRI_API Result NRI_CALL nri::CreateDeviceFromD3D12Device(const DeviceCreationD3D12Desc& deviceCreationD3D12Desc, Device*& device)
 {
     DeviceCreationDesc deviceCreationDesc = {};
@@ -361,7 +370,9 @@ NRI_API Result NRI_CALL nri::CreateDeviceFromD3D12Device(const DeviceCreationD3D
 
     return FinalizeDeviceCreation(deviceCreationDesc, *deviceImpl, device);
 }
+#endif
 
+#if (NRI_USE_VULKAN == 1)
 NRI_API Result NRI_CALL nri::CreateDeviceFromVkDevice(const DeviceCreationVulkanDesc& deviceCreationVulkanDesc, Device*& device)
 {
     DeviceCreationDesc deviceCreationDesc = {};
@@ -383,31 +394,40 @@ NRI_API Result NRI_CALL nri::CreateDeviceFromVkDevice(const DeviceCreationVulkan
     Result result = Result::UNSUPPORTED;
     DeviceBase* deviceImpl = nullptr;
 
-    #if (NRI_USE_VULKAN == 1)
-        result = CreateDeviceVK(tempDeviceCreationVulkanDesc, deviceImpl);
-    #endif
+    result = CreateDeviceVK(tempDeviceCreationVulkanDesc, deviceImpl);
 
     if (result != Result::SUCCESS)
         return result;
 
     return FinalizeDeviceCreation(deviceCreationDesc, *deviceImpl, device);
 }
+#endif
 
 NRI_API void NRI_CALL nri::DestroyDevice(Device& device)
 {
     ((DeviceBase&)device).Destroy();
 }
 
+#if (NRI_USE_VULKAN == 1)
 NRI_API Format NRI_CALL nri::ConvertVKFormatToNRI(uint32_t vkFormat)
 {
+#if NRI_USE_VULKAN
     return VKFormatToNRIFormat((VkFormat)vkFormat);
+#else
+    (void)vkFormat;
+    return Format::UNKNOWN;
+#endif
 }
+#endif
 
+#if (NRI_USE_D3D11 == 1) || (NRI_USE_D3D12 == 1)
 NRI_API Format NRI_CALL nri::ConvertDXGIFormatToNRI(uint32_t dxgiFormat)
 {
     return DXGIFormatToNRIFormat(dxgiFormat);
 }
+#endif
 
+#if (NRI_USE_VULKAN == 1)
 NRI_API uint32_t NRI_CALL nri::ConvertNRIFormatToVK(Format format)
 {
     MaybeUnused(format);
@@ -418,6 +438,7 @@ NRI_API uint32_t NRI_CALL nri::ConvertNRIFormatToVK(Format format)
         return 0;
     #endif
 }
+#endif
 
 NRI_API uint32_t NRI_CALL nri::ConvertNRIFormatToDXGI(Format format)
 {

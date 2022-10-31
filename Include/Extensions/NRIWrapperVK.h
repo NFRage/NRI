@@ -122,9 +122,11 @@ namespace nri
         uint32_t physicalDeviceMask;
     };
 
+#if NRI_USE_VULKAN
     NRI_API Result NRI_CALL CreateDeviceFromVkDevice(const DeviceCreationVulkanDesc& deviceDesc, Device*& device);
     NRI_API Format NRI_CALL ConvertVKFormatToNRI(uint32_t vkFormat);
     NRI_API uint32_t NRI_CALL ConvertNRIFormatToVK(Format format);
+#endif
 
     struct WrapperVKInterface
     {

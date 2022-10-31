@@ -514,7 +514,6 @@ static NRIVkInstance NRI_CALL GetVkInstance(const Device& device)
 Result DeviceVal::FillFunctionTable(WrapperVKInterface& wrapperVKInterface) const
 {
 #if NRI_USE_VULKAN
-
     wrapperVKInterface = {};
     wrapperVKInterface.CreateCommandQueueVK = ::CreateCommandQueueVK;
     wrapperVKInterface.CreateCommandAllocatorVK = ::CreateCommandAllocatorVK;
@@ -536,6 +535,7 @@ Result DeviceVal::FillFunctionTable(WrapperVKInterface& wrapperVKInterface) cons
     return ValidateFunctionTable(GetLog(), wrapperVKInterface);
 
 #else
+    (void)wrapperVKInterface;
     return Result::UNSUPPORTED;
 #endif
 }
