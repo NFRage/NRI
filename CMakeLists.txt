@@ -240,7 +240,8 @@ endif()
 
 target_link_libraries(${PROJECT_NAME} PRIVATE NRI_Shared NRI_Validation)
 
-target_include_directories(${PROJECT_NAME} PRIVATE "Include" "Source/Shared" "External/vulkan/include")
+target_include_directories(${PROJECT_NAME} PRIVATE "Source/Shared" "External/vulkan/include")
+target_include_directories(${PROJECT_NAME} PUBLIC "Include")
 target_compile_definitions(${PROJECT_NAME} PRIVATE ${NRI_COMPILE_DEFINITIONS})
 target_compile_definitions(${PROJECT_NAME} PUBLIC ${NRI_PUBLIC_COMPILE_DEFINITIONS})
 set_property(TARGET ${PROJECT_NAME} PROPERTY FOLDER "${NRI_PROJECT_FOLDER}")
