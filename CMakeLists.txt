@@ -181,7 +181,13 @@ if (NRI_ENABLE_VULKAN)
     target_include_directories(NRI_VK PRIVATE "Include" "Source/Shared" "External/vulkan/include")
     target_compile_definitions(NRI_VK PRIVATE ${NRI_COMPILE_DEFINITIONS})
     target_compile_definitions(NRI_VK PUBLIC ${NRI_PUBLIC_COMPILE_DEFINITIONS})
-    target_link_libraries(NRI_VK PRIVATE NRI_Shared)
+    
+    if (WIN32)
+        target_link_libraries(NRI_VK PRIVATE NRI_Shared ${NRI_INPUT_LIB_DXGI} ${NRI_INPUT_LIB_DXGUID})
+    else()
+        target_link_libraries(NRI_VK PRIVATE NRI_Shared)
+    endif()
+
     set_property(TARGET NRI_VK PROPERTY FOLDER "${NRI_PROJECT_FOLDER}")
 
     # Window system defines
