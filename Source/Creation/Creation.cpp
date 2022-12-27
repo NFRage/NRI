@@ -440,6 +440,7 @@ NRI_API uint32_t NRI_CALL nri::ConvertNRIFormatToVK(Format format)
 }
 #endif
 
+#if (NRI_USE_D3D11 == 1) || (NRI_USE_D3D12 == 1)
 NRI_API uint32_t NRI_CALL nri::ConvertNRIFormatToDXGI(Format format)
 {
     MaybeUnused(format);
@@ -452,3 +453,4 @@ NRI_API uint32_t NRI_CALL nri::ConvertNRIFormatToDXGI(Format format)
         return 0;
     #endif
 }
+#endif

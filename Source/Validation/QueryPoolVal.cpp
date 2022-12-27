@@ -39,7 +39,7 @@ uint32_t QueryPoolVal::GetQuerySize() const
     return m_CoreAPI.GetQuerySize(m_ImplObject);
 }
 
-inline bool QueryPoolVal::SetQueryState(uint32_t offset, bool state)
+bool QueryPoolVal::SetQueryState(uint32_t offset, bool state)
 {
     const size_t batchIndex = offset >> 6;
     const uint64_t batchValue = m_DeviceState[batchIndex];
