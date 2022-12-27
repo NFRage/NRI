@@ -151,16 +151,28 @@ NRI_API Result NRI_CALL nri::GetPhysicalDevices(PhysicalDeviceGroup* physicalDev
     Library* loader = LoadSharedLibrary(VULKAN_LOADER_NAME);
     if (loader == nullptr)
         return Result::UNSUPPORTED;
+    
+    const char* requiredExtension[64] = {};
 
     const auto vkGetInstanceProcAddr = (PFN_vkGetInstanceProcAddr)GetSharedLibraryFunction(*loader, "vkGetInstanceProcAddr");
     const auto vkCreateInstance = (PFN_vkCreateInstance)vkGetInstanceProcAddr(VK_NULL_HANDLE, "vkCreateInstance");
 
+#ifdef __APPLE__
+    requiredExtension[0] = "VK_KHR_portability_enumeration";
+#endif
+    
     VkApplicationInfo applicationInfo = {};
     applicationInfo.apiVersion = VK_API_VERSION_1_1;
 
     VkInstanceCreateInfo instanceCreateInfo = {};
     instanceCreateInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
+    
+#ifdef __APPLE__
+    instanceCreateInfo.flags |= VK_INSTANCE_CREATE_ENUMERATE_PORTABILITY_BIT_KHR;
     instanceCreateInfo.pApplicationInfo = &applicationInfo;
+    instanceCreateInfo.ppEnabledExtensionNames = requiredExtension;
+    instanceCreateInfo.enabledExtensionCount = 1;
+#endif
 
     VkInstance instance = VK_NULL_HANDLE;
     VkResult result = vkCreateInstance(&instanceCreateInfo, nullptr, &instance);

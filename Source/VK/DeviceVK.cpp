@@ -1236,6 +1236,10 @@ Result DeviceVK::CreateInstance(const DeviceCreationDesc& deviceCreationDesc)
     }
 
     extensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
+#ifdef __APPLE__
+    extensions.push_back(VK_KHR_PORTABILITY_ENUMERATION_EXTENSION_NAME);
+    extensions.push_back(VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME);
+#endif
 
     if (deviceCreationDesc.enableAPIValidation)
         layers.push_back("VK_LAYER_KHRONOS_validation");
@@ -1255,7 +1259,7 @@ Result DeviceVK::CreateInstance(const DeviceCreationDesc& deviceCreationDesc)
         VK_API_VERSION_1_2
     };
 
-    const VkInstanceCreateInfo info = {
+    VkInstanceCreateInfo info = {
         VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO,
         nullptr,
         (VkInstanceCreateFlags)0,
@@ -1265,7 +1269,11 @@ Result DeviceVK::CreateInstance(const DeviceCreationDesc& deviceCreationDesc)
         (uint32_t)extensions.size(),
         extensions.data(),
     };
-
+    
+#ifdef __APPLE__
+    info.flags |= VK_INSTANCE_CREATE_ENUMERATE_PORTABILITY_BIT_KHR;
+#endif
+    
     VkResult result = m_VK.CreateInstance(&info, m_AllocationCallbackPtr, &m_Instance);
 
     RETURN_ON_FAILURE(GetLog(), result == VK_SUCCESS, GetReturnCode(result),
@@ -1303,6 +1311,8 @@ Result DeviceVK::FindPhysicalDeviceGroup(const PhysicalDeviceGroup* physicalDevi
     m_VK.EnumeratePhysicalDeviceGroups(m_Instance, &deviceGroupNum, nullptr);
 
     VkPhysicalDeviceGroupProperties* deviceGroups = STACK_ALLOC(VkPhysicalDeviceGroupProperties, deviceGroupNum);
+    memset(deviceGroups, 0, sizeof(VkPhysicalDeviceGroupProperties) * deviceGroupNum);
+    deviceGroups[0].sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_GROUP_PROPERTIES;
     VkResult result = m_VK.EnumeratePhysicalDeviceGroups(m_Instance, &deviceGroupNum, deviceGroups);
 
     RETURN_ON_FAILURE(GetLog(), result == VK_SUCCESS, GetReturnCode(result),
@@ -1680,6 +1690,10 @@ Result DeviceVK::CreateLogicalDevice(const DeviceCreationDesc& deviceCreationDes
     extensions.push_back(VK_EXT_HDR_METADATA_EXTENSION_NAME);
     extensions.push_back(VK_KHR_SHADER_FLOAT16_INT8_EXTENSION_NAME);
 
+#ifdef __APPLE__
+    extensions.push_back("VK_KHR_portability_subset");
+#endif
+    
     FilterDeviceExtensions(extensions);
 
     EraseIncompatibleExtension(extensions, VK_EXT_BUFFER_DEVICE_ADDRESS_EXTENSION_NAME);
